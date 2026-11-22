@@ -1,0 +1,688 @@
+/* ==========================================================================
+   Sentinel Vault Terminal — Retro Mainframe Access Control Console
+   Palette: Near-black #0B0F0C | Phosphor Green #7CFC9A | Amber #FFB000
+   Typography: IBM Plex Mono, Consolas, monospace throughout
+   ========================================================================== */
+
+:root {
+  --bg-core: #0B0F0C;
+  --bg-panel: #0E150F;
+  --bg-input: #060907;
+  --bg-hover: #14281A;
+  --bg-amber: #161102;
+
+  --text-phosphor: #7CFC9A;
+  --text-dim: #5EBD7D;
+  --text-amber: #FFB000;
+  --text-inverse: #0B0F0C;
+
+  --border-green: #7CFC9A;
+  --border-dim: #235231;
+  --border-amber: #FFB000;
+
+  --font-mono: "IBM Plex Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+/* ---------------- Reset & Base ---------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important; /* Square corners throughout strictly enforced */
+}
+
+html {
+  background-color: var(--bg-core);
+  color: var(--text-phosphor);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg-core);
+  color: var(--text-phosphor);
+  font-family: var(--font-mono);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* ---------------- Scanlines Overlay ---------------- */
+/* ONLY gradient allowed in design: subtle CRT scanlines overlay */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.28) 2px,
+    rgba(0, 0, 0, 0.28) 4px
+  );
+}
+
+/* ---------------- Layout & Outer Shell ---------------- */
+.terminal-shell {
+  width: 100%;
+  max-width: 840px;
+  margin: auto;
+}
+
+.terminal-container {
+  border: 1px solid var(--border-green);
+  background-color: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------------- Top Telemetry Bar ---------------- */
+.terminal-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  background-color: var(--bg-core);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.topbar-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.system-id {
+  font-weight: 700;
+  color: var(--text-phosphor);
+}
+
+.node-id, .port-id {
+  color: var(--text-dim);
+}
+
+.status-indicator {
+  padding: 2px 6px;
+  border: 1px solid var(--border-dim);
+  font-weight: 700;
+}
+.status-indicator.idle {
+  color: var(--text-dim);
+  border-color: var(--border-dim);
+}
+.status-indicator.success {
+  color: var(--text-phosphor);
+  border-color: var(--border-green);
+}
+.status-indicator.failure {
+  color: var(--text-amber);
+  border-color: var(--border-amber);
+}
+
+/* ---------------- Pipeline Sequence ---------------- */
+.terminal-pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border-dim);
+  background-color: #080D09;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.pipeline-step {
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pipeline-step.step-active {
+  color: var(--text-phosphor);
+}
+
+.pipeline-step .step-num {
+  color: var(--text-dim);
+}
+
+.pipeline-arrow {
+  color: var(--border-dim);
+}
+
+.pipeline-step.step-success {
+  color: var(--text-phosphor);
+  font-weight: 700;
+}
+
+.pipeline-step.step-failure {
+  color: var(--text-amber);
+  font-weight: 700;
+}
+
+/* ---------------- Terminal Main Content ---------------- */
+.terminal-main {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---------------- Boot Header / Banner ---------------- */
+.terminal-banner-box {
+  border: 1px solid var(--border-dim);
+  padding: 16px;
+  background-color: var(--bg-core);
+}
+
+.banner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.terminal-heading {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-phosphor);
+}
+
+.terminal-subheading {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.terminal-sysdiag {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-dim);
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-dim);
+}
+
+.sysdiag-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.diag-ok {
+  color: var(--text-phosphor);
+  font-weight: 600;
+}
+
+/* ---------------- Alerts (Amber Denial & Green Success) ---------------- */
+.terminal-alert {
+  padding: 16px;
+  border: 1px solid;
+}
+
+.terminal-alert-denied {
+  background-color: var(--bg-amber);
+  border-color: var(--border-amber);
+  color: var(--text-amber);
+}
+
+.terminal-alert-denied .alert-badge {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 1rem;
+}
+
+.terminal-alert-denied .alert-code {
+  font-size: 0.75rem;
+  color: var(--text-amber);
+  opacity: 0.85;
+}
+
+.terminal-alert-denied .alert-msg {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.terminal-alert-success {
+  background-color: #07190D;
+  border-color: var(--border-green);
+  color: var(--text-phosphor);
+}
+
+.terminal-alert-success .alert-badge {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 1rem;
+}
+
+.terminal-alert-success .alert-code {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.terminal-alert-success .alert-msg {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.alert-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* ---------------- Terminal Form ---------------- */
+.terminal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-instruction {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.terminal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terminal-prompt {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: var(--text-phosphor);
+}
+
+.terminal-input-wrap {
+  display: flex;
+  align-items: stretch;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-dim);
+  position: relative;
+}
+
+.terminal-input-wrap:focus-within {
+  border-color: var(--border-green);
+}
+
+.terminal-chevron {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--text-dim);
+  font-weight: 700;
+  user-select: none;
+}
+
+.terminal-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 10px;
+  background-color: transparent;
+  border: none;
+  color: var(--text-phosphor);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.terminal-input::placeholder {
+  color: #2F633E;
+}
+
+.terminal-input[aria-invalid="true"] {
+  color: var(--text-amber);
+}
+
+.terminal-input-wrap:has(.terminal-input[aria-invalid="true"]) {
+  border-color: var(--border-amber);
+}
+
+.terminal-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  background-color: transparent;
+  border: none;
+  border-left: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.terminal-btn-inline:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-phosphor);
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--text-amber);
+  margin: 0;
+}
+
+.caps-warning {
+  font-size: 0.8rem;
+  color: var(--text-amber);
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ---------------- Terminal Buttons ---------------- */
+.terminal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.terminal-btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  background-color: #0E2415;
+  border: 1px solid var(--border-green);
+  color: var(--text-phosphor);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.terminal-btn-submit:hover {
+  background-color: var(--text-phosphor);
+  color: var(--text-inverse);
+}
+
+.terminal-btn-submit:hover .cursor-block {
+  background-color: var(--text-inverse);
+}
+
+.terminal-btn-submit:active {
+  background-color: #5EBD7D;
+  color: var(--text-inverse);
+}
+
+.terminal-btn-signout {
+  background-color: #060907;
+  border-color: var(--border-dim);
+  color: var(--text-dim);
+}
+
+.terminal-btn-signout:hover {
+  border-color: var(--border-green);
+  background-color: var(--text-phosphor);
+  color: var(--text-inverse);
+}
+
+/* ---------------- Blinking Block Cursor ---------------- */
+.cursor-block {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  background-color: var(--text-phosphor);
+  animation: cursor-blink 1s steps(1) infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ---------------- System Record Dump (Success Page) ---------------- */
+.terminal-dump-container {
+  border: 1px solid var(--border-green);
+  background-color: var(--bg-core);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dump-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.dump-title-bar strong {
+  color: var(--text-phosphor);
+}
+
+.dump-grid {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dump-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed #183520;
+}
+
+.dump-key {
+  width: 200px;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.dump-value {
+  margin: 0;
+  flex: 1;
+  min-width: 160px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-phosphor);
+  word-break: break-word;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border-green);
+  background-color: #0F2A17;
+  color: var(--text-phosphor);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------- Test Accounts Directory Table ---------------- */
+.terminal-directory {
+  border: 1px solid var(--border-dim);
+  padding: 14px;
+  background-color: var(--bg-core);
+}
+
+.directory-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: 6px;
+}
+
+.directory-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.directory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.directory-table th {
+  padding: 6px 8px;
+  color: var(--text-dim);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-dim);
+  white-space: nowrap;
+}
+
+.directory-table td {
+  padding: 6px 8px;
+  color: var(--text-phosphor);
+  border-bottom: 1px dashed #17321F;
+  white-space: nowrap;
+}
+
+.directory-note {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+/* ---------------- Footer ---------------- */
+.terminal-footer {
+  border-top: 1px solid var(--border-dim);
+  background-color: var(--bg-core);
+  padding: 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-cmd {
+  font-weight: 700;
+  color: var(--text-phosphor);
+}
+
+/* ---------------- Focus Accessibility ---------------- */
+:focus-visible {
+  outline: 2px solid var(--text-phosphor);
+  outline-offset: 2px;
+}
+
+.terminal-input:focus-visible {
+  outline: none;
+}
+
+/* ---------------- Motion Preferences ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .cursor-block {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------------- Responsive (Down to 360px) ---------------- */
+@media (max-width: 600px) {
+  body {
+    padding: 8px;
+  }
+
+  .terminal-main {
+    padding: 16px 12px;
+    gap: 18px;
+  }
+
+  .terminal-topbar {
+    font-size: 0.75rem;
+  }
+
+  .terminal-pipeline {
+    display: none; /* Hide multi-step pipeline on narrow mobile to prevent horizontal overflow */
+  }
+
+  .dump-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dump-key {
+    width: 100%;
+  }
+
+  .dump-value {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .terminal-heading {
+    font-size: 1.15rem;
+  }
+
+  .terminal-input {
+    font-size: 0.85rem;
+  }
+
+  .directory-table {
+    font-size: 0.75rem;
+  }
+}
